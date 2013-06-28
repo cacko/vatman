@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+    <item
+        android:id="@+id/action_filter_on"
+        android:icon="@drawable/ic_action_select_all"
+        android:showAsAction="always"
+        android:title="Филтриране"
+        android:visible="false">
+    </item>
+    <item
+        android:id="@+id/action_favourite_on"
+        android:icon="@android:drawable/btn_star_big_on"
+        android:showAsAction="always"
+        android:title="Добави любима спирка"
+        android:visible="false">
+    </item>
+    <item
+        android:id="@+id/action_favourite_off"
+        android:icon="@android:drawable/btn_star_big_off"
+        android:showAsAction="always"
+        android:title="Премахни любима спирка"
+        android:visible="false">
+    </item>
+    <item
+        android:id="@+id/action_refresh"
+        android:icon="@drawable/ic_action_refresh"
+        android:showAsAction="always"
+        android:title="Обнови"
+        android:visible="false">
+    </item>
+    <item
+        android:id="@+id/options_map_mode"
+        android:icon="@android:drawable/ic_menu_mapmode" 
+        android:showAsAction="ifRoom"
+        android:title="Карта"/>
+    <item
+        android:id="@+id/options_preferences"
+        android:icon="@android:drawable/ic_menu_preferences"
+        android:title="Настройки"/>
+    <item
+        android:id="@+id/options_about"
+        android:icon="@android:drawable/ic_menu_info_details"
+        android:title="Инфо"/>
+    <item
+        android:id="@+id/options_quit"
+        android:icon="@android:drawable/ic_menu_close_clear_cancel"
+        android:title="Изход"/>
+
+</menu>
