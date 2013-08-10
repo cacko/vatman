@@ -10,29 +10,26 @@ import android.widget.TextView;
 
 public class VatmanAbout extends Activity {
 
-	private TextView m_aboutVersion;
-	private TextView m_aboutCopyright;
-	
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
 
-		setContentView(R.layout.about);
-		
-		m_aboutVersion = (TextView) findViewById(R.id.about_version);
-		m_aboutCopyright = (TextView) findViewById(R.id.about_copyright);
-		
-		PackageInfo pInfo = null;
-		try {
-			pInfo = getPackageManager().getPackageInfo(getPackageName(), PackageManager.GET_META_DATA);
-		} catch (NameNotFoundException e) {
+        setContentView(R.layout.about);
 
-		}
-		String versionInfo = pInfo.versionName;
+        TextView m_aboutVersion = (TextView) findViewById(R.id.about_version);
+        TextView m_aboutCopyright = (TextView) findViewById(R.id.about_copyright);
 
-		m_aboutVersion.setText(versionInfo);
-		m_aboutCopyright.setText(Html.fromHtml("&copy; 2010 mutanti.com"));
+        PackageInfo pInfo = null;
+        try {
+            pInfo = getPackageManager().getPackageInfo(getPackageName(), PackageManager.GET_META_DATA);
+        } catch (NameNotFoundException e) {
+
+        }
+        String versionInfo = pInfo.versionName;
+
+        m_aboutVersion.setText(versionInfo);
+        m_aboutCopyright.setText(Html.fromHtml("&copy; 2010 mutanti.com"));
 
 
-	}
+    }
 }

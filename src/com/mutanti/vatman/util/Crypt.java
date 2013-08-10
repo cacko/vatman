@@ -5,43 +5,43 @@ import javax.crypto.spec.SecretKeySpec;
 
 public class Crypt {
 
-	final static String AES_V1_KEY = "6FE3F6E12EE0E51A9AFDBB90D83A4FC5";
+    final static String AES_V1_KEY = "6FE3F6E12EE0E51A9AFDBB90D83A4FC5";
 
-	static String nullPadString(String original) {
-		String output = original;
-		int remain = output.length() % 16;
-		if (remain != 0) {
-			remain = 16 - remain;
-			for (int i = 0; i < remain; i++) {
-				output += (char) 0;
-			}
-		}
-		return output;
-	}
+    static String nullPadString(String original) {
+        String output = original;
+        int remain = output.length() % 16;
+        if (remain != 0) {
+            remain = 16 - remain;
+            for (int i = 0; i < remain; i++) {
+                output += (char) 0;
+            }
+        }
+        return output;
+    }
 
-	public static String encrypt(final String RAWDATA, boolean ENCODE)
-			throws Exception { // This was a custom
-		String encrypted = null;
-		byte[] encryptedBytes = null;
-		byte[] key;
-		key = AES_V1_KEY.getBytes();
-		SecretKeySpec skeySpec = new SecretKeySpec(key, "AES");
-		Cipher cipher = null;
-		try {
-			String input = Integer.toString(RAWDATA.length()) + '|' + RAWDATA;
-			cipher = Cipher.getInstance("AES/ECB/NoPadding");
-			cipher.init(Cipher.ENCRYPT_MODE, skeySpec);
-			encryptedBytes = cipher.doFinal(nullPadString(input).getBytes());
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		if (ENCODE) {
-			encrypted = new String(Base64.encode(encryptedBytes));
-		} else {
-			encrypted = new String(encryptedBytes);
-		}
-		return encrypted;
-	}
+    public static String encrypt(final String RAWDATA, boolean ENCODE)
+            throws Exception { // This was a custom
+        String encrypted;
+        byte[] encryptedBytes = null;
+        byte[] key;
+        key = AES_V1_KEY.getBytes();
+        SecretKeySpec skeySpec = new SecretKeySpec(key, "AES");
+        Cipher cipher;
+        try {
+            String input = Integer.toString(RAWDATA.length()) + '|' + RAWDATA;
+            cipher = Cipher.getInstance("AES/ECB/NoPadding");
+            cipher.init(Cipher.ENCRYPT_MODE, skeySpec);
+            encryptedBytes = cipher.doFinal(nullPadString(input).getBytes());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        if (ENCODE) {
+            encrypted = Base64.encode(encryptedBytes);
+        } else {
+            encrypted = new String(encryptedBytes);
+        }
+        return encrypted;
+    }
 
 //	static String decryptString(final String ENCRYPTEDDATA, final boolean DECODE)
 //			throws Exception {

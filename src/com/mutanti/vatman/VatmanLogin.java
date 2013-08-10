@@ -13,52 +13,50 @@ import android.widget.EditText;
 
 public final class VatmanLogin extends Activity {
 
-	private Button buttonOk;
-	private Button buttonCancel;
+    public final static String ARG_PERSIST = "persist";
+    private EditText edit_username;
+    private EditText edit_password;
+    private CheckBox checkbox_save;
 
-	private EditText edit_username;
-	private EditText edit_password;
-	private CheckBox checkbox_save;
+    /**
+     * Called when the activity is first created.
+     */
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
 
-	public final static String ARG_PERSIST  = "persist";
+        final InputMethodManager mgr = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 
-	/** Called when the activity is first created. */
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+        setContentView(R.layout.login);
 
-		final InputMethodManager mgr = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        edit_username = (EditText) findViewById(R.id.edit_username);
+        edit_password = (EditText) findViewById(R.id.edit_password);
+        checkbox_save = (CheckBox) findViewById(R.id.checkbox_save);
 
-		setContentView(R.layout.login);
+        Button buttonOk = (Button) findViewById(R.id.button_login_ok);
+        buttonOk.setOnClickListener(new OnClickListener() {
+            public void onClick(View v) {
+                mgr.hideSoftInputFromWindow(v.getWindowToken(), 0);
+                Intent intent = new Intent();
+                intent.putExtra(VatmanPreferences.KEY_PREF_USERNAME, edit_username.getText()
+                        .toString());
+                intent.putExtra(VatmanPreferences.KEY_PREF_PASSWORD, edit_password.getText()
+                        .toString());
+                intent.putExtra(ARG_PERSIST, checkbox_save.isChecked());
+                setResult(Activity.RESULT_OK, intent);
+                finish();
+            }
+        });
 
-		edit_username = (EditText) findViewById(R.id.edit_username);
-		edit_password = (EditText) findViewById(R.id.edit_password);
-		checkbox_save = (CheckBox) findViewById(R.id.checkbox_save);
+        Button buttonCancel = (Button) findViewById(R.id.button_login_cancel);
+        buttonCancel.setOnClickListener(new OnClickListener() {
+            public void onClick(View v) {
+                mgr.hideSoftInputFromWindow(v.getWindowToken(), 0);
+                Intent intent = new Intent();
+                setResult(Activity.RESULT_CANCELED, intent);
+                finish();
+            }
+        });
 
-		buttonOk = (Button) findViewById(R.id.button_login_ok);
-		buttonOk.setOnClickListener(new OnClickListener() {
-			public void onClick(View v) {
-				mgr.hideSoftInputFromWindow(v.getWindowToken(), 0);
-				Intent intent = new Intent();
-				intent.putExtra(VatmanPreferences.KEY_PREF_USERNAME, edit_username.getText()
-						.toString());
-				intent.putExtra(VatmanPreferences.KEY_PREF_PASSWORD, edit_password.getText()
-						.toString());
-				intent.putExtra(ARG_PERSIST, checkbox_save.isChecked());
-				setResult(Activity.RESULT_OK, intent);
-				finish();
-			}
-		});
-
-		buttonCancel = (Button) findViewById(R.id.button_login_cancel);
-		buttonCancel.setOnClickListener(new OnClickListener() {
-			public void onClick(View v) {
-				mgr.hideSoftInputFromWindow(v.getWindowToken(), 0);
-				Intent intent = new Intent();
-				setResult(Activity.RESULT_CANCELED, intent);
-				finish();
-			}
-		});
-
-	}
+    }
 }

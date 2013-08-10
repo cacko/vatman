@@ -46,4 +46,13 @@
     <string name="description_heading">Посока към спирката</string>
     <string name="description_fav_button">Добави в любими</string>
 
+    <string name="actionFilter">Филтриране</string>
+    <string name="actionFavouriteOn">Добави любима спирка</string>
+    <string name="actionFavouriteOff">Премахни любима спирка</string>
+    <string name="actionRefresh">Обнови</string>
+    <string name="actionMap">Карта</string>
+    <string name="actionPreferences">Настройки</string>
+    <string name="actionAbout">Инфо</string>
+    <string name="actionExit">Изход</string>
+
 </resources>
