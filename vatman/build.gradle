@@ -4,6 +4,17 @@ android {
     compileSdkVersion "Google Inc.:Google APIs:19"
     buildToolsVersion "19.0.1"
 
+    signingConfigs {
+
+        release {
+
+            storeFile file('/Users/cacko/Android/projects/keystore')
+            storePassword "q1w2e3"
+            keyAlias "androapps"
+            keyPassword "q1w2e3"
+        }
+    }
+
     defaultConfig {
         minSdkVersion 14
         targetSdkVersion 19
@@ -12,6 +23,7 @@ android {
         release {
             runProguard false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+            signingConfig signingConfigs.release
         }
     }
 }
