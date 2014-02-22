@@ -2,8 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="com.mutanti.vatman"
           android:installLocation="auto"
-          android:versionCode="2026"
+          android:versionCode="2027"
           android:versionName="2.1.0">
+
+    <uses-sdk android:minSdkVersion="14"/>
 
     <supports-screens android:anyDensity="true"/>
 
