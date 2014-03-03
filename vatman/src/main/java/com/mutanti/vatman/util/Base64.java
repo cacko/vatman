@@ -61,16 +61,4 @@ public class Base64 {
         return lines;
 
     }
-
-    public static void main(String[] args) {
-
-        for (int i = 0; i < args.length; i++) {
-
-            System.err.println("encoding \"" + args[i] + "\"");
-            System.out.println(encode(args[i]));
-
-        }
-
-    }
-
 }

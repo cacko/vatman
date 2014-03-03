@@ -287,20 +287,20 @@ public class Db {
         properties.put(FavouriteProperties.ARG_LINES, linesName);
         properties.put(FavouriteProperties.ARG_LINES_ROUTES, linesRoutes);
         return new FavouriteStop(code, stopName, properties, distance,
-                stopLocation, Boolean.valueOf(isFavourite));
+                stopLocation, isFavourite);
     }
 
     private ArrayList<Favourite> fetchFavouriteStops(Cursor cursor,
                                                      VatmanLocation location, boolean isFavourite) {
         ArrayList<Favourite> result = new ArrayList<Favourite>();
         cursor.moveToFirst();
-        while (cursor.isAfterLast() == false) {
+        while (!cursor.isAfterLast()) {
             result.add(getFavouriteFromCursor(cursor, location, isFavourite));
             cursor.moveToNext();
         }
         cursor.close();
         if (location != null) {
-            Comparator<Favourite> comperator = new Comparator<Favourite>() {
+            Comparator<Favourite> comparator = new Comparator<Favourite>() {
                 public int compare(Favourite object1, Favourite object2) {
                     if (object1.getDistance() > object2.getDistance()) {
                         return 1;
@@ -310,7 +310,7 @@ public class Db {
                     return 0;
                 }
             };
-            Collections.sort(result, comperator);
+            Collections.sort(result, comparator);
         }
         return result;
     }

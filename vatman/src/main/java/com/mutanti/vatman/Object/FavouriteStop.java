@@ -1,7 +1,6 @@
 package com.mutanti.vatman.Object;
 
 import android.os.Parcel;
-import android.os.Parcelable;
 import android.widget.TextView;
 
 import com.mutanti.vatman.Adapter.FavouritesAdapter;
