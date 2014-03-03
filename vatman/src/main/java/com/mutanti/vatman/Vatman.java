@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInfo;
@@ -15,8 +16,6 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -45,6 +44,11 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesClient;
+import com.google.android.gms.location.LocationClient;
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
 import com.mutanti.vatman.Adapter.FavouritesAdapter;
 import com.mutanti.vatman.Adapter.ScheduleAdapter;
 import com.mutanti.vatman.Adapter.StopsAdapter;
@@ -65,11 +69,13 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-public final class Vatman extends Activity implements LocationListener,
+public final class Vatman extends Activity implements
+        GooglePlayServicesClient.ConnectionCallbacks,
+        GooglePlayServicesClient.OnConnectionFailedListener,
+        LocationListener,
         SensorEventListener {
 
     public static final String TAG = "vatman";
@@ -128,10 +134,8 @@ public final class Vatman extends Activity implements LocationListener,
     private String mUsername;
     private String mPassword;
     private long mDbVersion;
-    private int mDbTableVersionStops;
     private ArrayList<ScheduleItem> mSchedules;
     private Display mDisplay;
-    private LocationManager mLocationManager;
     private VatmanLocation mLocation = null;
     private double[] mLocationBoundingBox = null;
     private boolean mPermitLocationUpdates;
@@ -149,6 +153,25 @@ public final class Vatman extends Activity implements LocationListener,
     private MenuItem mFavouriteActionOn;
     private MenuItem mFavouriteActionOff;
     private MenuItem mFilterAction;
+    LocationClient mLocationClient;
+    // Milliseconds per second
+    private static final int MILLISECONDS_PER_SECOND = 1000;
+    // Update frequency in seconds
+    public static final int UPDATE_INTERVAL_IN_SECONDS = 5;
+    // Update frequency in milliseconds
+    private static final long UPDATE_INTERVAL =
+            MILLISECONDS_PER_SECOND * UPDATE_INTERVAL_IN_SECONDS;
+    // The fastest update frequency, in seconds
+    private static final int FASTEST_INTERVAL_IN_SECONDS = 1;
+    // A fast frequency ceiling in milliseconds
+    private static final long FASTEST_INTERVAL =
+            MILLISECONDS_PER_SECOND * FASTEST_INTERVAL_IN_SECONDS;
+    LocationRequest mLocationRequest;
+
+
+    private final static int
+            CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
+
     private OnClickListener mViewModeIconOnClick = new OnClickListener() {
         public void onClick(View v) {
             int viewMode = mFavouritesAdapter.getViewMode();
@@ -204,7 +227,7 @@ public final class Vatman extends Activity implements LocationListener,
         mDbVersion = mPreferences.getLong(
                 VatmanPreferences.KEY_PREF_STOP_VERSION, 0);
 
-        mDbTableVersionStops = mPreferences.getInt(
+        int mDbTableVersionStops = mPreferences.getInt(
                 VatmanPreferences.KEY_PREF_STOPS_TABLE_VERSION, 0);
 
         mProgressIndef = new ProgressDialog(Vatman.this);
@@ -226,7 +249,6 @@ public final class Vatman extends Activity implements LocationListener,
             mDb.initTableStops();
             saveTableVersion(VatmanPreferences.KEY_PREF_STOPS_TABLE_VERSION,
                     Db.TABLE_VERSION_STOPS);
-            mDbTableVersionStops = Db.TABLE_VERSION_STOPS;
         }
         if (isNewDb || stopsVersion > mDbVersion) {
             initDbData(stopsCount);
@@ -292,7 +314,17 @@ public final class Vatman extends Activity implements LocationListener,
         mViewModeIcon = (ImageView) findViewById(R.id.icon_view_mode);
         mViewModeIcon.setOnClickListener(mViewModeIconOnClick);
 
-        mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        mLocationClient = new LocationClient(this, this, this);
+        // Create the LocationRequest object
+        mLocationRequest = LocationRequest.create();
+        // Use high accuracy
+        mLocationRequest.setPriority(
+                LocationRequest.PRIORITY_HIGH_ACCURACY);
+        // Set the update interval to 5 seconds
+        mLocationRequest.setInterval(UPDATE_INTERVAL);
+        // Set the fastest update interval to 1 second
+        mLocationRequest.setFastestInterval(FASTEST_INTERVAL);
+
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         mAccelerometer = mSensorManager
                 .getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
@@ -378,19 +410,14 @@ public final class Vatman extends Activity implements LocationListener,
     }
 
     private void enableLocationUpdates() {
-        List<String> providers = mLocationManager.getProviders(true);
-        if (providers.contains(LocationManager.NETWORK_PROVIDER)) {
-            mLocationManager.requestLocationUpdates(
-                    LocationManager.NETWORK_PROVIDER, 60000, 5, this);
-        }
-        if (providers.contains(LocationManager.GPS_PROVIDER)) {
-            mLocationManager.requestLocationUpdates(
-                    LocationManager.GPS_PROVIDER, 60000, 5, this);
-        }
+        mLocationClient.connect();
     }
 
     private void disableLocationUpdates() {
-        mLocationManager.removeUpdates(this);
+        if (mLocationClient.isConnected()) {
+            mLocationClient.removeLocationUpdates(this);
+        }
+        mLocationClient.disconnect();
     }
 
     private void enableOrientationUpdates() {
@@ -495,7 +522,7 @@ public final class Vatman extends Activity implements LocationListener,
                 }
                 break;
             case PREFERENCES_SAVED:
-                onPrefencesUpdate();
+                onPreferencesUpdate();
                 break;
 
             case MAP_RESULT:
@@ -520,7 +547,7 @@ public final class Vatman extends Activity implements LocationListener,
         }
     }
 
-    private void onPrefencesUpdate() {
+    private void onPreferencesUpdate() {
         int viewMode = Integer.valueOf(mPreferences.getString(
                 VatmanPreferences.KEY_PREF_VIEW_MODE, "1"));
         mFavouritesAdapter.switchViewMode(viewMode, mMainView);
@@ -786,6 +813,59 @@ public final class Vatman extends Activity implements LocationListener,
         mScheduleHandler.removeCallbacks(mScheduleUpdateTask);
     }
 
+    @Override
+    public void onConnected(Bundle dataBundle) {
+        // Display the connection status
+//        Toast.makeText(this, "Connected", Toast.LENGTH_SHORT).show();
+        mLocationClient.requestLocationUpdates(mLocationRequest, this);
+    }
+
+    /*
+     * Called by Location Services if the connection to the
+     * location client drops because of an error.
+     */
+    @Override
+    public void onDisconnected() {
+        // Display the connection status
+//        Toast.makeText(this, "Disconnected. Please re-connect.",
+//                Toast.LENGTH_SHORT).show();
+    }
+
+    /*
+     * Called by Location Services if the attempt to
+     * Location Services fails.
+     */
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+        /*
+         * Google Play services can resolve some errors it detects.
+         * If the error has a resolution, try sending an Intent to
+         * start a Google Play services activity that can resolve
+         * error.
+         */
+        if (connectionResult.hasResolution()) {
+            try {
+                // Start an Activity that tries to resolve the error
+                connectionResult.startResolutionForResult(
+                        this,
+                        CONNECTION_FAILURE_RESOLUTION_REQUEST);
+                /*
+                * Thrown if Google Play services canceled the original
+                * PendingIntent
+                */
+            } catch (IntentSender.SendIntentException e) {
+                // Log the error
+                e.printStackTrace();
+            }
+        } else {
+            /*
+             * If no resolution is available, display a dialog to the
+             * user with the error.
+             */
+//            showErrorDialog(connectionResult.getErrorCode());
+        }
+    }
+
     public void onLocationChanged(Location location) {
         mLocation = new VatmanLocation(location);
         mLocationBoundingBox = GeoUtil.getBoundingBox(location, 500);
@@ -839,7 +919,7 @@ public final class Vatman extends Activity implements LocationListener,
         try {
             pInfo = getPackageManager().getPackageInfo(getPackageName(),
                     PackageManager.GET_META_DATA);
-            result =  pInfo.versionName + "b" + pInfo.versionCode;
+            result = pInfo.versionName + "b" + pInfo.versionCode;
         } catch (NameNotFoundException e) {
             result = "";
         }
