@@ -2,8 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="com.mutanti.vatman"
           android:installLocation="auto"
-          android:versionCode="2029"
-          android:versionName="2.1.1">
+          android:versionCode="2030"
+          android:versionName="2.1.2">
 
     <uses-sdk android:minSdkVersion="14"/>
 

@@ -3,13 +3,13 @@ package com.mutanti.vatman;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Base64;
 
 import com.mutanti.vatman.Exception.VatmanException;
 import com.mutanti.vatman.Object.Cache;
 import com.mutanti.vatman.Object.PhoneInfo;
 import com.mutanti.vatman.Object.ScheduleItem;
 import com.mutanti.vatman.Providers.RemoteProvider;
-import com.mutanti.vatman.util.Base64;
 import com.mutanti.vatman.util.Crypt;
 
 import org.apache.http.HttpEntity;
@@ -90,11 +90,14 @@ public final class Fetcher {
             mClient = new DefaultHttpClient(params);
         }
         String encryptedClientId = null;
+        long requestTimestamp = System.currentTimeMillis();
         try {
             String phoneId = mPhoneInfo.getIMEI() + "|"
                     + mPhoneInfo.getOperator() + "|"
                     + mPhoneInfo.getPhoneModel() + "|"
-                    + mPhoneInfo.getOSVersion() + "|" + mVersion;
+                    + mPhoneInfo.getOSVersion() + "|"
+                    + mVersion + "|"
+                    + Crypt.getMD5(mPhoneInfo.getIMEI() + requestTimestamp);
             encryptedClientId = Crypt.encrypt(phoneId, true);
         } catch (Exception e) {
             // TODO Auto-generated catch block
@@ -103,11 +106,12 @@ public final class Fetcher {
         StringEntity entity = new StringEntity("<request><client>"
                 + encryptedClientId + "</client><stops><stop>" + mStop
                 + "</stop></stops><dbVersion>" + dbVersion
-                + "</dbVersion></request>");
+                + "</dbVersion><timestamp>" + requestTimestamp + "</timestamp></request>");
         HttpPost method = new HttpPost(mBaseURL);
         if (Vatman.AUTORIZATION_REQUIRED) {
+            String authorization = mUsername + ":" + mPassword;
             method.addHeader("Authorization",
-                    "Basic " + Base64.encode(mUsername + ":" + mPassword));
+                    "Basic " + Base64.encodeToString(authorization.getBytes(), Base64.DEFAULT));
         }
         method.setEntity(entity);
         mFetchStart = System.currentTimeMillis();
